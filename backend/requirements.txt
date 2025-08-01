@@ -1,0 +1,4 @@
+fastapi[standard]>=0.116.0
+pydantic>=2.7.0,<3.0.0
+strands-agents>=1.0.0,<2.0.0
+strands-agents-tools>=0.2.0

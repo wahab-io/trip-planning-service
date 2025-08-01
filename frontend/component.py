@@ -14,8 +14,11 @@ class Frontend(Stack):
             cpu=256,
             memory_limit_mib=512,
             desired_count=1,
+            runtime_platform=ecs.RuntimePlatform(
+                cpu_architecture=ecs.CpuArchitecture.ARM64
+            ),
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_asset("./frontend"),
                 container_port=3000
             )
-        )        
+        )

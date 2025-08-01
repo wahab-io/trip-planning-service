@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: trip-planning-dynamodb
+    ports:
+      - "8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+
+  dashboard:
+    image: kritishdhaubanjar/dynamodb-dashboard:latest
+    ports:
+      - "4567:4567"
+    environment:
+      AWS_REGION: us-west-2
+      AWS_ENDPOINT: http://dynamodb:8000
+      AWS_ACCESS_KEY_ID: fakeMyKeyId
+      AWS_SESSION_TOKEN: fakeSessionToken
+      AWS_SECRET_ACCESS_KEY: fakeSecretAccessKey
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trip-planning-backend
+    ports:
+      - "8080:80"
+    environment:
+      - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK} # using .env file
+      - DYNAMODB_ENDPOINT=http://dynamodb:8000
+    depends_on:
+      - dynamodb
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trip-planning-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - backend

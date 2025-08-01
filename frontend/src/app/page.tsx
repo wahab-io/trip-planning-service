@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { MapPinIcon, CalendarIcon, DollarSignIcon, PlaneIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -15,12 +17,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { nanoid } from "nanoid"
 
 const formSchema = z.object({
   location: z.string().min(1, "Please select a destination"),
   dateFrom: z.date({ error: "Start date is required" }),
   dateTo: z.date({ error: "End date is required" }),
-  budget: z.number().min(1, "Budget must be greater than 0")
+  budget: z.int().min(1, "Please enter a budget")
 }).refine((data) => data.dateTo > data.dateFrom, {
   message: "End date must be after start date",
   path: ["dateTo"]
@@ -28,6 +31,7 @@ const formSchema = z.object({
 
 export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -39,9 +43,32 @@ export default function Home() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
-    console.log(values);
-    // TODO: Submit to backend
-    setTimeout(() => setIsSubmitting(false), 2000);
+
+    const id = nanoid(10)
+    
+    // submit post request to backend
+    const response = await fetch('http://localhost:8080/plan', {
+      method: "POST",
+      body: JSON.stringify({
+        id: id,
+        location: values.location,
+        from_date: values.dateFrom.toISOString().split('T')[0],
+        to_date: values.dateTo.toISOString().split('T')[0],
+        budget: values.budget
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    // check if successful post, then push the router to navigate to plan id page
+    if (!response.ok) {
+      console.error("Error submitting form");
+      setIsSubmitting(false);
+      return;
+    }
+    
+    router.push(`/plan/${id}`);
   };
 
   return (
@@ -53,10 +80,12 @@ export default function Home() {
             <ThemeToggle />
           </div>
           <div className="text-center mb-12">
-            <div className="flex items-center justify-center mb-4">
-              <PlaneIcon className="h-12 w-12 text-blue-600 mr-3" />
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">TripPlanner</h1>
-            </div>
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <div className="flex items-center justify-center mb-4">
+                <PlaneIcon className="h-8 w-8 text-blue-600 mr-2" />
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Trip Plan</h1>
+              </div>
+            </Link>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Plan your perfect journey with AI-powered recommendations tailored to your budget and preferences
             </p>
