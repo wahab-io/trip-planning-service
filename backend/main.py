@@ -68,7 +68,7 @@ async def new_plan(request: TripPlanRequest):
         table = dynamodb.Table("trip-history")  # type: ignore
         table.load()
     except:
-        table = dynamodb.create_table( # type: ignore
+        table = dynamodb.create_table(  # type: ignore
             TableName="trip-history",
             KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
             AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
@@ -112,7 +112,7 @@ async def get_plan_recommendation(id: str, recommendation_type: str):
         else:
 
             agent = Agent(
-                model="us.anthropic.claude-3-5-haiku-20241022-v1:0",
+                model="us.deepseek.r1-v1:0",
                 tools=[],
                 callback_handler=None,
             )

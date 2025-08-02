@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TripPlanner - Plan Your Perfect Journey",
+  title: "Trip Planner - Plan Your Perfect Journey",
   description: "Discover amazing destinations and plan your perfect trip with our AI-powered travel planning service",
 };
 

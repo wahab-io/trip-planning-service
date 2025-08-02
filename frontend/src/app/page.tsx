@@ -83,7 +83,7 @@ export default function Home() {
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <div className="flex items-center justify-center mb-4">
                 <PlaneIcon className="h-8 w-8 text-blue-600 mr-2" />
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Trip Plan</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trip Planner</h1>
               </div>
             </Link>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
@@ -98,7 +98,7 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPinIcon className="h-5 w-5" />
-                Plan Your Trip
+                Trip Planner
               </CardTitle>
               <CardDescription>
                 Tell us about your dream destination and we&apos;ll create the perfect itinerary for you

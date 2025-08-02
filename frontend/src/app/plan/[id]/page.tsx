@@ -62,7 +62,12 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
       london: "🇬🇧 London, UK",
       tokyo: "🇯🇵 Tokyo, Japan",
       newyork: "🇺🇸 New York, USA",
-      rome: "🇮🇹 Rome, Italy"
+      rome: "🇮🇹 Rome, Italy",
+      barcelona: "🇪🇸 Barcelona, Spain",
+      dubai: "🇦🇪 Dubai, UAE",
+      singapore: "🇸🇬 Singapore",
+      istanbul: "🇹🇷 Istanbul, Turkiye",
+      amsterdam: "🇳🇱 Amsterdam, Netherlands"
     };
     return locations[loc] || loc;
   };
@@ -117,7 +122,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
             <Link href="/" className="hover:opacity-80 transition-opacity">
               <div className="flex items-center justify-center mb-4">
                 <PlaneIcon className="h-8 w-8 text-blue-600 mr-2" />
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Trip Plan</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trip Planner</h1>
               </div>
             </Link>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
