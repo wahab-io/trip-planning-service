@@ -20,7 +20,7 @@ import { format } from "date-fns";
 import { nanoid } from "nanoid"
 
 const formSchema = z.object({
-  location: z.string().min(1, "Please select a destination"),
+  destination: z.string().min(1, "Please select a destination"),
   dateFrom: z.date({ error: "Start date is required" }),
   dateTo: z.date({ error: "End date is required" }),
   budget: z.int().min(1, "Please enter a budget")
@@ -36,7 +36,7 @@ export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      location: "",
+      destination: "",
       budget: 0
     }
   });
@@ -51,7 +51,7 @@ export default function Home() {
       method: "POST",
       body: JSON.stringify({
         id: id,
-        location: values.location,
+        destination: values.destination,
         from_date: values.dateFrom.toISOString().split('T')[0],
         to_date: values.dateTo.toISOString().split('T')[0],
         budget: values.budget
@@ -110,7 +110,7 @@ export default function Home() {
                   {/* Location */}
                   <FormField
                     control={form.control}
-                    name="location"
+                    name="destination"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Destination</FormLabel>

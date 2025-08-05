@@ -4,22 +4,74 @@ import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { MapPinIcon, CalendarIcon, DollarSignIcon, HomeIcon, UtensilsIcon, PlaneIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { useTextStream } from "@/components/ui/response-stream";
+import { Markdown } from "@/components/ui/markdown";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ui/reasoning";
 
 interface StreamingResponse {
   lodging: string;
   food: string;
   travel: string;
+  lodgingReasoning: string;
   isComplete: boolean;
 }
 
 interface Plan {
-  location?: string;
+  destination?: string;
   from_date?: string;
   to_date?: string;
   budget?: number;
+}
+
+function LodgingContent({ content, reasoning }: { content: string; reasoning?: string }) {
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);  
+
+  return (
+    <>
+      {reasoning && (
+          <Reasoning isStreaming={isStreaming}>
+            <ReasoningTrigger>Show reasoning</ReasoningTrigger>
+            <ReasoningContent className="ml-2 border-l-2 border-l-slate-200 px-2 pb-1 dark:border-l-slate-700" markdown>
+              {reasoning}
+            </ReasoningContent>
+          </Reasoning>
+      )}
+      <div className="prose dark:prose-invert max-w-none">
+        <Markdown>{content}</Markdown>
+      </div>
+    </>
+  );
+}
+
+function FoodContent({ content }: { content: string }) {
+  const { displayedText } = useTextStream({
+    textStream: content,
+    speed: 80,
+    mode: "fade"
+  });
+
+
+  return (
+    <div className="prose dark:prose-invert max-w-none">
+      <Markdown>{content}</Markdown>
+    </div>
+  );
+}
+
+function TravelContent({ content }: { content: string }) {
+  const { displayedText } = useTextStream({
+    textStream: content,
+    speed: 80,
+    mode: "fade"
+  });
+
+  return (
+    <div className="prose dark:prose-invert max-w-none">
+      <Markdown>{content}</Markdown>
+    </div>
+  );
 }
 
 function PlanContent({params} : {params: Promise<{id: string}>}) {
@@ -32,8 +84,10 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
     lodging: "",
     food: "",
     travel: "",
+    lodgingReasoning: "",
     isComplete: false
   });
+
 
   const [plan, setPlan] = useState<Plan | null>(null);
   
@@ -51,7 +105,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
     fetchPlan();
   }, [id]);
 
-  const location = plan?.location || "paris";
+  const location = plan?.destination || "paris";
   const dateFrom = plan?.from_date || "";
   const dateTo = plan?.to_date || "";
   const budget = plan?.budget?.toString() || "0";
@@ -84,13 +138,47 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
 
       const decoder = new TextDecoder();
       let content = '';
+      let reasoningContent = '';
+      if (type === 'lodging') {
+        // Processing lodging with reasoning
+      }
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          break;
+        }
         
-        content += decoder.decode(value, { stream: true });
-        setResponse(prev => ({ ...prev, [type]: content }));
+        const chunk = decoder.decode(value, { stream: true });
+        
+        if (type === 'lodging') {
+          // Parse reasoning and response content
+          const fullContent = content + chunk;
+          const reasoningMatch = fullContent.match(/<reasoning>([\s\S]*?)<\/reasoning>/g);
+          const responseMatch = fullContent.match(/<response>([\s\S]*?)<\/response>/g);
+          
+          if (reasoningMatch) {
+            reasoningContent = reasoningMatch.map(match => match.replace(/<\/?reasoning>/g, '')).join('');
+          }
+          
+          let displayContent = '';
+          if (responseMatch) {
+            displayContent = responseMatch.map(match => match.replace(/<\/?response>/g, '')).join('');
+          } else {
+            // If no response tags yet, show content without reasoning tags
+            displayContent = fullContent.replace(/<reasoning>[\s\S]*?<\/reasoning>/g, '');
+          }
+          
+          content = fullContent;
+          setResponse(prev => ({ 
+            ...prev, 
+            [type]: displayContent,
+            lodgingReasoning: reasoningContent
+          }));
+        } else {
+          content += chunk;
+          setResponse(prev => ({ ...prev, [type]: content }));
+        }
       }
     } catch (error) {
       setResponse(prev => ({ ...prev, [type]: `Error: ${error}` }));
@@ -108,6 +196,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
     };
 
     fetchAllRecommendations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan, id]);
 
   return (
@@ -169,16 +258,9 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
               </CardHeader>
               <CardContent>
                 {response.lodging ? (
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {response.lodging}
-                    {!response.food && <span className="animate-pulse">|</span>}
-                  </p>
+                  <LodgingContent content={response.lodging} reasoning={response.lodgingReasoning} />
                 ) : (
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
+                  <div className="text-gray-500 dark:text-gray-400">Generating lodging recommendations...</div>
                 )}
               </CardContent>
             </Card>
@@ -193,18 +275,11 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
               </CardHeader>
               <CardContent>
                 {response.food ? (
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {response.food}
-                    {!response.travel && <span className="animate-pulse">|</span>}
-                  </p>
+                  <FoodContent content={response.food} />
                 ) : response.lodging ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-2/3" />
-                    <Skeleton className="h-4 w-3/4" />
-                  </div>
+                  <div className="text-gray-500 dark:text-gray-400">Generating food recommendations...</div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Waiting for lodging recommendations...</p>
+                  <div className="text-gray-500 dark:text-gray-400">Waiting for lodging recommendations...</div>
                 )}
               </CardContent>
             </Card>
@@ -219,18 +294,11 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
               </CardHeader>
               <CardContent>
                 {response.travel ? (
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {response.travel}
-                    {!response.isComplete && <span className="animate-pulse">|</span>}
-                  </p>
+                  <TravelContent content={response.travel} />
                 ) : response.food ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/5" />
-                    <Skeleton className="h-4 w-2/3" />
-                  </div>
+                  <div className="text-gray-500 dark:text-gray-400">Generating travel recommendations...</div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-400">Waiting for food recommendations...</p>
+                  <div className="text-gray-500 dark:text-gray-400">Waiting for food recommendations...</div>
                 )}
               </CardContent>
             </Card>

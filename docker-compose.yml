@@ -24,13 +24,19 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: trip-planning-backend
+    privileged: true
     ports:
       - "8080:80"
     environment:
       - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK} # using .env file
       - DYNAMODB_ENDPOINT=http://dynamodb:8000
+      - MCP_ENDPOINT=flights-mcp:6000
     depends_on:
       - dynamodb
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend
 
   frontend:
     build:
@@ -43,3 +49,16 @@ services:
       - NEXT_PUBLIC_API_URL=http://localhost:8080
     depends_on:
       - backend
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend
+
+  flights-mcp:
+    build:
+      context: ./flights-mcp
+    container_name: trip-planning-flights-mcp
+    ports:
+      - "6000:6000"
+    environment:
+      - DUFFEL_API_KEY_LIVE=${DUFFEL_API_KEY_LIVE}
