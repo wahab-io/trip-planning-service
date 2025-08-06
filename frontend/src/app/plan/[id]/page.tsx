@@ -15,6 +15,7 @@ interface StreamingResponse {
   food: string;
   travel: string;
   lodgingReasoning: string;
+  isReasoningComplete: boolean;
   isComplete: boolean;
 }
 
@@ -25,8 +26,16 @@ interface Plan {
   budget?: number;
 }
 
-function LodgingContent({ content, reasoning }: { content: string; reasoning?: string }) {
-  const [isStreaming, setIsStreaming] = useState<boolean>(false);  
+function LodgingContent({ content, reasoning, isReasoningComplete }: { content: string; reasoning?: string; isReasoningComplete?: boolean }) {
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (reasoning && !isReasoningComplete) {
+      setIsStreaming(true);
+    } else if (isReasoningComplete) {
+      setIsStreaming(false);
+    }
+  }, [reasoning, isReasoningComplete]);
 
   return (
     <>
@@ -85,6 +94,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
     food: "",
     travel: "",
     lodgingReasoning: "",
+    isReasoningComplete: false,
     isComplete: false
   });
 
@@ -146,6 +156,9 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) {
+          if (type === 'lodging') {
+            setResponse(prev => ({ ...prev, isReasoningComplete: true }));
+          }
           break;
         }
         
@@ -258,7 +271,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
               </CardHeader>
               <CardContent>
                 {response.lodging ? (
-                  <LodgingContent content={response.lodging} reasoning={response.lodgingReasoning} />
+                  <LodgingContent content={response.lodging} reasoning={response.lodgingReasoning} isReasoningComplete={response.isReasoningComplete} />
                 ) : (
                   <div className="text-gray-500 dark:text-gray-400">Generating lodging recommendations...</div>
                 )}
