@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPinIcon, CalendarIcon, DollarSignIcon, HomeIcon, UtensilsIcon, PlaneIcon } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useTextStream } from "@/components/ui/response-stream";
 import { Markdown } from "@/components/ui/markdown";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ui/reasoning";
 
@@ -55,13 +54,6 @@ function LodgingContent({ content, reasoning, isReasoningComplete }: { content: 
 }
 
 function FoodContent({ content }: { content: string }) {
-  const { displayedText } = useTextStream({
-    textStream: content,
-    speed: 80,
-    mode: "fade"
-  });
-
-
   return (
     <div className="prose dark:prose-invert max-w-none">
       <Markdown>{content}</Markdown>
@@ -70,12 +62,6 @@ function FoodContent({ content }: { content: string }) {
 }
 
 function TravelContent({ content }: { content: string }) {
-  const { displayedText } = useTextStream({
-    textStream: content,
-    speed: 80,
-    mode: "fade"
-  });
-
   return (
     <div className="prose dark:prose-invert max-w-none">
       <Markdown>{content}</Markdown>

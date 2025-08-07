@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 class TripPlan(BaseModel):
     id: str
-    origin: str = Field(default="SFO")
+    origin: str = Field(default="San Francisco")
     from_date: datetime.date = Field(default=datetime.date.today())
     to_date: datetime.date = Field(
         default=datetime.date.today() + datetime.timedelta(days=7)

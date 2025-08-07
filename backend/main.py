@@ -195,7 +195,8 @@ async def get_plan_travel_recommendation(id: str):
                     system_prompt=f"""You are a helpful travel agent helping search flights and local transportation information.
                     Provide flights recommendation from {origin} to {destination} for dates {from_date} to {to_date}.
                     The flights need to be within the budget of ${budget} USD. Only use half of the budget for flights and local transportation.
-                    Use the flight search tools to find flights. Always use SFO as the origin airport code.""",
+                    Use the flight search tools to find flights. Always use SFO as the origin airport code.
+                    Return the response in markdown format.""",
                 )
 
                 prompt = f"""
@@ -203,8 +204,8 @@ async def get_plan_travel_recommendation(id: str):
                 Output the response with "Here is your travel and transportation recommendation."
                 
                 Break down the recommendation in two sections:
-                - ## Flights
-                - ## Location Transportation
+                - *Flights*
+                - *Location Transportation*
 
                 For each section provide tips, that can be helpful and relevant to the {destination}.
                 Maximum use 150 words to limit your response.
