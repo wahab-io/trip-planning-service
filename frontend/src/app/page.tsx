@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { nanoid } from "nanoid"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
 const formSchema = z.object({
   destination: z.string().min(1, "Please select a destination"),
   dateFrom: z.date({ error: "Start date is required" }),
@@ -47,7 +49,7 @@ export default function Home() {
     const id = nanoid(10)
     
     // submit post request to backend
-    const response = await fetch('http://localhost:8080/plan', {
+    const response = await fetch(`${API_BASE_URL}/plan`, {
       method: "POST",
       body: JSON.stringify({
         id: id,

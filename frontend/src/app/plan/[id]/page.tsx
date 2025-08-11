@@ -9,6 +9,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Markdown } from "@/components/ui/markdown";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ui/reasoning";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
 interface StreamingResponse {
   lodging: string;
   food: string;
@@ -91,7 +93,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
     if (!id) return;
     
     const fetchPlan = async () => {
-      const response = await fetch(`http://localhost:8080/plan/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/plan/${id}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -124,7 +126,7 @@ function PlanContent({params} : {params: Promise<{id: string}>}) {
 
   const fetchRecommendation = async (type: 'lodging' | 'food' | 'travel') => {
     try {
-      const response = await fetch(`http://localhost:8080/plan/${id}/recommendation/${type}`, {
+      const response = await fetch(`${API_BASE_URL}/plan/${id}/recommendation/${type}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
