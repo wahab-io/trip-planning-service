@@ -179,6 +179,17 @@ cd frontend
 npm run dev
 ```
 
+#### Option 3: Running code in Container
+
+```bash
+finch run -it --rm --name vscode-browser \
+  -p 8080:8080 \
+  -v "$(pwd):/home/coder/project" \
+  -v "$HOME/.gitconfig:/home/coder/.gitconfig" \
+  codercom/code-server:latest \
+  --bind-addr 0.0.0.0:8080 --auth none
+```
+
 ### Production Mode
 
 ```bash
