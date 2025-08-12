@@ -86,14 +86,6 @@ AWS_BEARER_TOKEN_BEDROCK=your_bedrock_token_here
 DUFFEL_API_KEY_LIVE=your_duffel_api_key_here
 ```
 
-#### Backend `.env` file:
-
-```bash
-AWS_BEARER_TOKEN_BEDROCK=your_bedrock_token_here
-DYNAMODB_ENDPOINT=http://localhost:8000
-MCP_ENDPOINT=localhost:6000
-```
-
 ## 🛠️ Installation & Setup
 
 ### 1. Clone the Repository
@@ -108,42 +100,16 @@ cd trip-planning-service
 ```bash
 # Copy environment template
 cp .env.example .env
-cp backend/.env.example backend/.env
 
 # Edit the .env files with your API keys
 ```
 
 ### 3. Install Dependencies
 
-#### Root Dependencies (CDK)
-
 ```bash
-npm install
-pip install -r requirements.txt
-```
-
-#### Frontend Dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
-```
-
-#### Backend Dependencies
-
-```bash
-cd backend
-pip install -r requirements.txt
-cd ..
-```
-
-#### Flights MCP Server Dependencies
-
-```bash
-cd flights-mcp
-uv sync
-cd ..
+brew install finch
+finch vm init
+finch run public.ecr.aws/finch/hello-finch:latest
 ```
 
 ## 🚀 Running the Application
@@ -157,29 +123,10 @@ cd ..
 finch compose up --build
 
 # With file watching for development
-finch compose up --build --watch
+docker compose up --build --watch # finch doesn't support watch flag
 ```
 
-#### Option 2: Individual Services
-
-```bash
-# Terminal 1: Start DynamoDB
-finch run -p 8000:8000 amazon/dynamodb-local -jar DynamoDBLocal.jar -sharedDb -inMemory
-
-# Terminal 2: Start Flights MCP Server
-cd flights-mcp
-uv run flights-mcp
-
-# Terminal 3: Start Backend
-cd backend
-python -m uvicorn main:app --reload --port 8080
-
-# Terminal 4: Start Frontend
-cd frontend
-npm run dev
-```
-
-#### Option 3: Running code in Container
+#### Option 2: Running code in Container
 
 ```bash
 finch run -it --rm --name vscode-browser \
@@ -190,11 +137,10 @@ finch run -it --rm --name vscode-browser \
   --bind-addr 0.0.0.0:8080 --auth none
 ```
 
-### Production Mode
+### Amazon Q - Vibe Coding
 
-```bash
-# Build and start all services
-finch compose -f docker-compose.yml up --build -d
+```
+Currently this trip planning service doesn't take source information from the UI in @frontend and uses the default value of "San Francisco" as origin and SFO as an airport code when finding flights. Change this behavior to ask user to select the origin. For origin, only allow 5 US major cities as an option and use the international airport code for that city when making flights mcp call.
 ```
 
 ## 🌐 Service Endpoints
@@ -205,7 +151,7 @@ finch compose -f docker-compose.yml up --build -d
 | Backend API        | http://localhost:8080 | FastAPI REST API         |
 | DynamoDB           | http://localhost:8000 | Local DynamoDB instance  |
 | DynamoDB Dashboard | http://localhost:4567 | Web UI for DynamoDB      |
-| Flights MCP        | http://localhost:6000 | Flight search MCP server |
+| Flights MCP        | tcp://localhost:6000  | Flight search MCP server |
 
 ## 📚 API Documentation
 
@@ -277,22 +223,6 @@ npx cdk deploy --all
 
 - **Backend Stack**: ECS Fargate service for FastAPI backend
 - **Frontend Stack**: ECS Fargate service for Next.js frontend
-
-## 🧪 Testing
-
-### Backend Tests
-
-```bash
-cd backend
-python -m pytest tests/
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-npm test
-```
 
 ## 🔧 Development
 
@@ -395,11 +325,11 @@ lsof -i :6000  # Flights MCP
 
 ```bash
 # Clean up containers and images
-docker-compose down -v
-docker system prune -a
+finch compose down -v
+finch system prune -a
 
 # Rebuild from scratch
-docker-compose up --build --force-recreate
+finch compose up --build --force-recreate
 ```
 
 #### DynamoDB Connection

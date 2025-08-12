@@ -75,19 +75,39 @@ async def get_plan_lodging_recommendation(id: str):
 
         else:
             try:
-                location = record["destination"]
+                destination = record["destination"]
                 from_date = record["from_date"]
                 to_date = record["to_date"]
                 budget = record["budget"]
                 agent = Agent(
                     model="us.deepseek.r1-v1:0",
-                    system_prompt=f"""You are a lodging specialist helping find accommodations in {location}
-                    from {from_date} to {to_date}. Provide hotel and accommodation recommendations.""",
+                    # DeepSeek R1 recommends not to use system prompt
+                    # See https://docs.together.ai/docs/prompting-deepseek-r1
+                    # system_prompt=f"""You are a helpful travel agent, who provides lodging recommendations.
+                    # Provide hotel and accommodation recommendations.""",
                     callback_handler=None,
                 )
 
-                prompt = """
-                Please provide brief lodging recommendation during my travel.            
+                prompt = f"""
+                Act as a travel advisor specializing in budget-conscious lodging recommendations. The user has provided:
+
+                1. {destination}
+                2. Travel start {from_date} and end date {to_date} (to determine duration and season)
+                3. Total trip budget {budget} (lodging should use ≤50% of this).
+                
+                Your task is to:
+
+                Calculate the maximum lodging budget (50% of total) and per-night allowance (total lodging budget ÷ duration).
+                Analyze weather patterns at the destination during the travel dates (e.g., rainy season, extreme temperatures, peak summer/winter). Highlight how this might impact lodging choices (e.g., need for AC, heating, or indoor amenities).
+                Recommend 3-4 accommodation categories (e.g., boutique hotels, hostels, vacation rentals) suited to the budget, duration, and weather. Explain why each fits (e.g., 'Vacation rentals offer kitchens for longer stays' or 'Hostels save costs for solo travelers').
+                Suggest specific features to prioritize (e.g., proximity to public transit if rainy, pools for summer, cozy common areas for winter).
+                Provide a budget breakdown example (e.g., 'With a $2,000 total budget, allocate $1,000 for 7 nights = ~$143/night. Opt for mid-range hotels or private Airbnb rooms').
+                
+                Example response structure:
+
+                Weather Insights: 'Expect warm, humid days (85°F) in Bali during July. Prioritize AC and pool access.'
+                Budget Analysis: '$1,500 total budget → $750 for lodging. At 10 nights, aim for ≤$75/night.'
+                Recommendations: '1. Guesthouses ($50–$70/night): Budget-friendly with AC. 2. Boutique hotels ($80–$100/night: Splurge for shorter stays). 3. Hostels ($20–$30/bed: Ideal for extending your trip).'                         
                 """
 
                 reasoning = "<reasoning>"
@@ -135,15 +155,33 @@ async def get_plan_food_recommendation(id: str):
             budget = record["budget"]
             agent = Agent(
                 model="us.deepseek.r1-v1:0",
-                system_prompt=f"""You are a food and dining specialist for {destination} 
-                from {from_date} to {to_date} with a budget of ${budget}. 
-                Recommend restaurants, local cuisine, and dining experiences.""",
+                # system_prompt=f"""You are a helpful food and dining specialist for {destination}
+                # from {from_date} to {to_date} with a budget of ${budget}.
+                # """,
                 callback_handler=None,
             )
 
-            prompt = """
-            Please provide brief food recommendation during my travel.            
+            prompt = f"""
+            Act as a travel advisor specializing in food and dining recommendations. The user has provided:
+
+            1. {destination}
+            2. Travel dates {from_date} to {to_date}
+            3. Total trip budget ${budget} (food should use ≤25% of this).
+
+            Your task is to:
+
+            1. Calculate the maximum food budget (25% of total).
+            2. Recommend 3-4 food categories (e.g., fine dining, local cuisine, street food) suited to the budget and duration.
+            3. Suggest specific features to prioritize (e.g., proximity to public transit, local cuisine, street food).
+            4. Provide a budget breakdown example (e.g., 'With a $2, 000 total budget, allocate $500 for 7 days stay = ~$71/day. Provide breakdowns for lunch and dinner').
+
+            Example response structure:
+
+            Budget Analysis: '$1,500 total budget → $375 for food. At 10 nights, aim for ≤$37.5/day.'
+            Recommendations: '1. Fine dining ($100–$200/meal): Budget-friendly with AC. 2. Local cuisine ($50–$70/meal: Splurge for shorter stays). 3. Street food ($20–$30/meal: Ideal for extending your trip).'
             """
+
+            reasoning = "<reasoning>"
 
             full_response = ""
             try:
@@ -192,16 +230,17 @@ async def get_plan_travel_recommendation(id: str):
                     model="us.anthropic.claude-3-7-sonnet-20250219-v1:0",
                     tools=[tools],
                     callback_handler=None,
-                    system_prompt=f"""You are a helpful travel agent helping search flights and local transportation information.
-                    Provide flights recommendation from {origin} to {destination} for dates {from_date} to {to_date}.
-                    The flights need to be within the budget of ${budget} USD. Only use half of the budget for flights and local transportation.
-                    Use the flight search tools to find flights. Always use SFO as the origin airport code.
-                    Return the response in markdown format.""",
+                    system_prompt="""You are a helpful travel agent helping search flights and 
+                    local transportation information. Use the flight search tools to find flights. 
+                    Always use SFO as the origin airport code.""",
                 )
 
                 prompt = f"""
+                Provide flights recommendation from {origin} to {destination} for dates {from_date} to {to_date}.
+                Only use 25% of ${budget} for flights and local transportation.
+                Return the response in markdown format.
                 Please provide brief travel recommendation during my travel.
-                Output the response with "Here is your travel and transportation recommendation."
+                Output the response with: \n\n"Here is your travel and transportation recommendations."
                 
                 Break down the recommendation in two sections:
                 - *Flights*
