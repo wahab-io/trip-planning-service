@@ -89,7 +89,7 @@ async def get_plan_lodging_recommendation(id: str):
                 )
 
                 prompt = f"""
-                Act as a travel advisor specializing in budget-conscious lodging recommendations. The user has provided:
+                Act as a travel advisor specializing in budget-conscious lodging recommendations. You are CONCISE in your response. The user has provided:
 
                 1. {destination}
                 2. Travel start {from_date} and end date {to_date} (to determine duration and season)
@@ -107,7 +107,7 @@ async def get_plan_lodging_recommendation(id: str):
 
                 Weather Insights: 'Expect warm, humid days (85°F) in Bali during July. Prioritize AC and pool access.'
                 Budget Analysis: '$1,500 total budget → $750 for lodging. At 10 nights, aim for ≤$75/night.'
-                Recommendations: '1. Guesthouses ($50–$70/night): Budget-friendly with AC. 2. Boutique hotels ($80–$100/night: Splurge for shorter stays). 3. Hostels ($20–$30/bed: Ideal for extending your trip).'                         
+                Recommendations: '1. Guesthouses ($50–$70/night): Budget-friendly with AC. 2. Boutique hotels ($80–$100/night: Splurge for shorter stays). 3. Hostels ($20–$30/bed: Ideal for extending your trip).'
                 """
 
                 reasoning = "<reasoning>"
